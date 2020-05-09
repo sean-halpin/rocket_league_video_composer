@@ -4,6 +4,7 @@ import ffmpeg
 import numpy as np
 import pytesseract
 import ntpath
+import csv
 from pytesseract import Output
 
 # get grayscale image
@@ -95,14 +96,14 @@ for v in mp4list:
     count = 0
     videosAnalysed += 1
     while (success and not goalDetected):
-        if count > 990:
+        if count > 1000:
             break
         # cv2.imwrite("frame%d.jpg" % count, image) # save frame as JPEG file
         success, image = vidcap.read()
         # print('Read a new frame: ', success)
         if(success):
             count += 1
-            if(count > 260 and count % 40 == 0):
+            if(count > (13 * 30) and count % 50 == 0):
                 try:
                     img = image[650:702, 40:155]
                     img = (get_grayscale(img))
@@ -114,18 +115,18 @@ for v in mp4list:
                     print(d['text'])
                     n_boxes = len(d['text'])
                     for i in range(n_boxes):
-                        matches = ["REPLAY", "REPL", "REP", "PLAY"]
+                        matches = ["REPLAY", "REPL", "REP", "PLAY", "EPL", "PLA"]
                         if any(x in d['text'][i] for x in matches):
                             print("Goal scored detected at frame: {}".format(count))
                             goalDetected = True
                             videosWithConfirmedGoal += 1
                             detectedGoalList.append([v, count])
                             # Overlay Bounding Boxes
-                            if int(d['conf'][i]) > 60:
-                                (x, y, w, h) = (d['left'][i], d['top']
-                                                [i], d['width'][i], d['height'][i])
-                                img = cv2.rectangle(
-                                    img, (x, y), (x + w, y + h), (255, 55, 0), 2)
+                            # if int(d['conf'][i]) > 60:
+                            #     (x, y, w, h) = (d['left'][i], d['top']
+                            #                     [i], d['width'][i], d['height'][i])
+                            #     img = cv2.rectangle(
+                            #         img, (x, y), (x + w, y + h), (255, 55, 0), 2)
                     print(count)
                 except Exception as e:
                     print(e)
@@ -133,16 +134,20 @@ for v in mp4list:
     print(videosAnalysed)
     print(videosWithConfirmedGoal)
 
+result_file = open("detected.csv",'w+')
+wr = csv.writer(result_file)
+for item in detectedGoalList:
+    wr.writerow([item,])
 
 for dg in detectedGoalList:
     print(dg[0])
     output_path = "../videos/" + ntpath.basename(dg[0]).replace(
-        ".mp4", "").replace("Rocket League®_", "") + ".clipped.mp4"
+        ".mp4", "").replace("Rocket League®_", "").replace("Rocket League™_", "").replace("Rocket League_", "") + ".clipped.mp4"
     input_stream = ffmpeg.input(dg[0])
-    start = (int(dg[1]) - (30 * 8)) / 30
+    start = (int(dg[1]) - int(30 * 8.5)) / 30
     if start < 0:
         start = 0
-    end = int(dg[1]) / 30
+    end = (int(dg[1]) / 30) - 2
 
     input_stream = ffmpeg.input(dg[0])
 
