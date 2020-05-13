@@ -80,7 +80,7 @@ def match_template(image, template):
 custom_config = r'--oem 1 --psm 1'
 
 # grab mp4 videos
-mp4list = [f for f in glob.glob("/home/sean/Videos/rocketleague/*.mp4")]
+mp4list = [f for f in glob.glob("/home/username/Videos/rocketleague/*.mp4")]
 
 detectedGoalList = []
 videosAnalysed = 0
